@@ -1,0 +1,44 @@
+Salesperson(name, age, salary)
+Orders(number, custname, salesperson, amount)
+Customer(name, city, industrytype)
+
+CREATE TABLE Salesperson (
+name VARCHAR2(20),
+age NUMBER,
+salary NUMBER,
+PRIMARY KEY(name)
+);
+
+CREATE TABLE Orders (
+numbers NUMBER,
+custname VARCHAR2(20),
+salesperson VARCHAR2(10),
+amount NUMBER,
+PRIMARY KEY(numbers, custname, salesperson),
+FOREIGN KEY(salesperson) REFERENCES Salesperson(name) ON DELETE CASCADE,
+FOREIGN KEY(custname) REFERENCES Customer(name) ON DELETE CASCADE
+);
+
+CREATE TABLE Customer (
+name VARCHAR2(10),
+city VARCHAR2(20),
+industrytype VARCHAR(20),
+PRIMARY KEY(name)
+);
+
+-------------------------------------------------------------------------------------------
+
+INSERT INTO Salesperson(name, age, salary) VALUES('양동철', 19, 5000000);
+INSERT INTO Salesperson(name, age, salary) VALUES('유진표', 18, 6000000);
+INSERT INTO Salesperson(name, age, salary) VALUES('유일', 19, 10000000);
+
+INSERT INTO Customer(name, city, industrytype) VALUES('이명훈', 'LA', '디자인');
+INSERT INTO Customer(name, city, industrytype) VALUES('이민주', 'LA', '회계');
+INSERT INTO Customer(name, city, industrytype) VALUES('이연직', 'NewYork', 'IT');
+
+INSERT INTO Orders(numbers, custname, salesperson, amount) VALUES(1, '이명훈', '양동철', 10);
+INSERT INTO Orders(numbers, custname, salesperson, amount) VALUES(2, '이민주', '유진표', 15);
+INSERT INTO Orders(numbers, custname, salesperson, amount) VALUES(3, '이명훈', '유일', 15);
+INSERT INTO Orders(numbers, custname, salesperson, amount) VALUES(4, '이연직', '유일', 12);
+INSERT INTO Orders(numbers, custname, salesperson, amount) VALUES(5, '이민주', '양동철', 20);
+

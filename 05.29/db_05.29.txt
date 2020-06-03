@@ -1,0 +1,191 @@
+select bookname
+from book b1
+where
+	((select count(b1.bookid)
+	from book b, orders o
+	where b.bookid=o.bookid
+		and b1.bookid=b.bookid)
+		>= 0.3*(select count(*) from customer));
+
+insert into book(bookid, bookname, publisher, price)
+values(11, '파이썬으로 자동화하기', '한빛아카데미', 30000);
+
+delete from book where publisher like '오렌지미디어';
+
+update book set publisher = '한빛미디어' 
+where publisher = '한빛아카데미';
+
+create table bookcompany(
+	name varchar2(20),
+	address varchar2(30),
+	begin date
+);
+desc bookcompany;
+
+alter table bookcompany 
+add webaddress varchar2(40);
+desc bookcompany;
+
+insert into bookcompany(name, address, begin, webaddress)
+values('한빛아카데미', '서울시 마포구', 1993-01-01, 'http://hanblit.co.kr');
+select * from bookcompany;
+
+-----------------------------------------------------------------------------
+
+CREATE TABLE Theater (
+theaterid NUMBER,
+theatername VARCHAR2(20),
+location VARCHAR2(10),
+PRIMARY KEY(theaterid)
+);
+
+CREATE TABLE Cust (
+custid NUMBER PRIMARY KEY,
+name VARCHAR2(20),
+address VARCHAR2(50)
+);
+
+CREATE TABLE Room (
+theaterid NUMBER,
+roomid NUMBER CHECK(roomid BETWEEN 0 AND 10),
+moviename VARCHAR2(20),
+price NUMBER CHECK(price<20000),
+seat NUMBER,
+FOREIGN KEY(theaterid) REFERENCES Theater(theaterid) ON DELETE CASCADE,
+PRIMARY KEY(theaterid, roomid)
+);
+
+CREATE TABLE Reservation (
+theaterid NUMBER,
+roomid NUMBER,
+custid NUMBER,
+seatnum NUMBER UNIQUE,
+day DATE,
+PRIMARY KEY(theaterid, roomid, custid),
+FOREIGN KEY(theaterid, roomid) REFERENCES Room(theaterid, roomid) ON DELETE CASCADE,
+FOREIGN KEY(custid) REFERENCES Cust(custid) ON DELETE CASCADE
+);
+
+INSERT INTO Theater(theaterid, theatername, location) VALUES(1, '롯데시네마', '잠실');
+INSERT INTO Theater(theaterid, theatername, location) VALUES(2, '메가박스', '강남');
+INSERT INTO Theater(theaterid, theatername, location) VALUES(3, 'CGV', '잠실');
+
+INSERT INTO Cust(custid, name, address) VALUES(3, '변지영', '강남');
+INSERT INTO Cust(custid, name, address) VALUES(4, '서호진', '잠실');
+INSERT INTO Cust(custid, name, address) VALUES(9, '서희준', '강남');
+
+INSERT INTO Room(theaterid, roomid, moviename, price, seat) VALUES(1, 1, '겨울왕국', 15000, 48);
+INSERT INTO Room(theaterid, roomid, moviename, price, seat) VALUES(3, 1, '알라딘', 7500, 120);
+INSERT INTO Room(theaterid, roomid, moviename, price, seat) VALUES(3, 2, NULL, 8000, 110);
+
+INSERT INTO Reservation(theaterid, roomid, custid, seatnum, day) VALUES(3, 2, 3, 15, '2020-05-01');
+INSERT INTO Reservation(theaterid, roomid, custid, seatnum, day) VALUES(3, 1, 4, 16, '2020-05-01');
+INSERT INTO Reservation(theaterid, roomid, custid, seatnum, day) VALUES(1, 1, 9, 48, '2020-05-02');
+
+-----------------------------------------------------------------------------------------------------------
+
+select theatername, location
+from theater;
+
+select *
+from theater
+where location like '잠실';
+
+select name, address
+from cust,
+where address like '잠실'
+order by name asc;
+
+select theaterid, roomid, moviename
+from room
+where price<=8000;
+
+select cust.name, theater.location
+from cust c, theater t
+where c.address = t.location;
+
+select count(theaterid)
+from theater;
+
+select avg(price)
+from room;
+
+select count(*)
+from cust c, reservation r
+where c.custid=r.custid and day= '2020-05-01';
+
+select moviename
+from theater t, room r
+where t.theaterid like r.theaterid 
+and theatername like '롯데시네마';
+
+select cust.name
+from theater t, reservation r, cust c
+where t.theaterid like r.theaterid and r.custid like c.custid and theatername like '롯데시네마';
+
+select sum(price)
+from theater t, room r
+where t.theaterid=r.theaterid 
+and theatername like '롯데시네마';
+
+1//
+select theatername, count(*)
+from room r, theater t
+where r.theaterid=t.theaterid
+group by theatername;
+
+2//
+SELECT * 
+FROM theater t, room  r
+WHERE t.roomid=r.roomid AND location LIKE '잠실';
+
+3//
+SELECT theaterid, COUNT(*)
+FROM reservation 
+WHERE day LIKE '2014-05-01'
+GROUP BY theaterid;
+
+4//
+SELECT moviename
+FROM room r, reservation r1 
+WHERE r.theaterid=r1.theater  
+AND r.roomid=r1.roomid 
+AND day LIKE '2020-05-01'
+GROUP BY r1.theaterid, r1.theaterid 
+HAVING COUNT(*) like 
+(SELECT MAX(*)
+FROM room ,reservation  
+WHERE room.theaterid=reservation.theaterid 
+and room.roomrid=reservation.roomid 
+AND day LIKE '2020-05-01'
+GROUP BY reservation.theaterid, reservation.roomid.);
+
+1//
+INSERT INTO 극장(극장번호, 극장이름, 위치)VALUES (1, CGV, Gangnam);
+
+INSERT INTO 상영관(극장번호, 상영관번호, 영화제목, 가격, 좌석수)VALUES (2, 1, HarryPotter, 13000, 130);
+
+INSERT INTO 예약(극장번호, 상영관번호, 고객번호, 좌석번호, 날짜)VALUES (2, 1, 2037, 77, 2018-11-21);
+
+INSERT INTO 고객(고객번호, 이름, 주소)VALUES (2037, IanKim, Gangnam);
+
+2//
+영화의 가격을 10% 인상하시오.
+
+UPDATE 상영관 SET 가격 = 가격 *1.1;
+
+7. [판매원 데이터베이스] 다음 릴레이션을 보고 물음에 답하시오. Salesperson은 판매원, Order는 주문, Customer는 고객을 나타낸다. 밑줄 친 속성은 기본키이고 custname과 salesperson은 각각 Customer.name과 Salesperson.name을 참조하는 외래키이다.
+
+(1) 테이블을 생성하는 CREATE 문과 데이터를 삽입하는 INSERT 문을 작성하시오. 테이블의 데이터 타입은 임의로 정하고, 데이터는 아래 질의의 결과가 나오도록 삽입한다.
+
+CREATE TABLE Salesperson (idx AUTO_INCREMENT, name VARCHAR(20) PRIMARY KEY, age INTEGER,salary VARCHAR(30),FOREIGN KEY(name) REFERENCES Order(custname),FOREIGN KEY(name) REFERENCES Customer(name));
+
+INSERT INTO Salesperson(name, age, salary)VALUES (Ian, 25, 1,000,000,000,000);
+
+CREATE TABLE Order (number AUTO_INCREMENT,custname VARCHAR(20) PRIMARY KEY,salesperson VARCHAR(20) PRIMARY KEY,amount INTEGER,FOREIGN KEY(custname) REFERENCES Customer(name),FOREIGN KEY(salesperson) REFERENCES Salesperson(name));
+
+INSERT INTO Order(custname, salesperson, amount)VALUES (Kang, Ian, 1000);
+
+CREATE TABLE Customer(custid AUTO_INCREMENT, name VARCHAR(20) PRIMARY KEY,city VARCHAR(20),industrytype VARCHAR(20),FOREIGN KEY(name) REFERENCES Order(custname),FOREIGN KEY(name) REFERENCES Salesperson(name));
+
+INSERT INTO Customer(name, city, industrytype)VALUES (Kang, NewYork, );

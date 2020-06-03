@@ -1,0 +1,71 @@
+sql plus "/as sysdba"
+alter user sys identified by 1234;
+alter user system identified by 1234;
+select * from ALL_users;
+create user smc30224
+identified by 1234;
+grant create user, create table, create sequence, create view, create session to smc30224;
+commit;
+
+show user;
+conn smc30224/1234
+show user;
+
+create table Book(
+	bookid number,
+	bookname varchar2(40),
+	publisher varchar2(40),
+	price number,
+	primary key(bookid)
+);
+
+create table customer(
+	custid number primary key,
+	name varchar2(20),
+	address varchar2(50),
+	phone varchar2(40)
+);
+
+create table orders(
+	orderid number primary key,
+	custid number not null,
+	bookid number not null,
+	saleprice number,
+	orderdate date,
+	foreign key(bookid) references book(bookid) on delete cascade,
+	foreign key(custid) references customer(custid) on delete cascade
+);
+	
+[권한 없을 시] 
+-system에서
+
+create user smc30224 identified by 1234 default tablespace users temporary tablespace temp profile default;
+grant connect, resource to smc30224;
+grant create view, create synonym to smc30224;
+alter user smc30224 account unlock;
+
+desc book;
+desc customer;
+desc orders;
+
+----------------------------------------------------------------------------------
+문제.1
+select * from book;
+
+select name
+from book b, customer c, orders o
+where b.bookid=o.bookid and c.custid=o.custid 
+	and name not like '최정훈'
+	and publisher in (select publisher 
+			from book b, customer c, orders o 
+			where b.bookid=o.bookid and c.custid=o.custid 
+			and name like '최정훈');
+
+문제.2
+select name
+from customer c2
+where 2 <=
+	(select count(distinct publisher)
+	from book b, orders o, customer c
+	where b.bookid=o.bookid and c.custid=o.custid
+		and (name like c2.name));
